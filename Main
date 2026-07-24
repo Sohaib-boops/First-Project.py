@@ -1,0 +1,128 @@
+import pygame
+
+pygame.init()
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+WIN_WIDTH = 800
+WIN_HEIGHT = 800
+FPS = 60
+SPEED = 5
+BULLET_SPEED = 15
+PUSHBACK = 5          # extra gap applied when resolving a wall collision
+#ENEMY_LEFT_BOUND = 260  # x position where the enemy turns around
+#ENEMY_RIGHT_BOUND = 700
+
+
+
+# ---------------------------------------------------------------------------
+# Sprite classes
+# ---------------------------------------------------------------------------
+class GameSprite(pygame.sprite.Sprite):
+    """Base sprite: loads an image, scales it, and positions its rect."""
+
+    def __init__(self, image, x, y, width, height):
+        super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load(image), (width, height))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.speed = 0
+
+    def reset(self):
+        """Draw this sprite at its current rect position (used for static sprites)."""
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+
+class Player(GameSprite):
+    def __init__(self, image, x, y, width, height):
+        super().__init__(image, x, y, width, height)
+        self.x_speed = 0
+        self.y_speed = 0
+
+    def update(self):
+       
+        self.rect.x += self.x_speed
+
+        hits = pygame.sprite.spritecollide(self, walls, False)
+        for wall in hits:
+            if self.x_speed > 0:
+                self.rect.right = wall.rect.left
+            elif self.x_speed < 0:
+                self.rect.left = wall.rect.right
+
+        # Vertical
+        self.rect.y += self.y_speed
+
+        hits = pygame.sprite.spritecollide(self, walls, False)
+        for wall in hits:
+            if self.y_speed > 0:
+                self.rect.bottom = wall.rect.top
+            elif self.y_speed < 0:
+                self.rect.top = wall.rect.bottom
+        
+        
+
+    def fire(self):
+        bullet = Bullet('bullet.png', self.rect.right, self.rect.centery, 25, 10)
+        bullets.add(bullet)
+
+
+class Enemy(GameSprite):
+    """Patrols back and forth between ENEMY_LEFT_BOUND and the right edge of the window."""
+
+    def __init__(self, image, x, y, width, height, speed,left,right):
+        super().__init__(image, x, y, width, height)
+        self.speed = speed
+        self.left = left
+        self.right = right
+
+
+    def update(self):
+        self.rect.x += self.speed
+        if self.rect.right > self.right:
+            self.speed *= -1
+        elif self.rect.x < self.left:
+            self.speed *= -1
+
+
+class Bullet(GameSprite):
+    def __init__(self, image, x, y, width, height):
+        super().__init__(image, x, y, width, height)
+        self.speed = BULLET_SPEED
+
+    def update(self):
+        self.rect.x += self.speed
+        
+        if self.rect.x > WIN_WIDTH + 10:  # off-screen -> remove
+            self.kill()
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------
+# Window & world setup
+# ---------------------------------------------------------------------------
+window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+pygame.display.set_caption('Maze Game')
+
+bg = GameSprite('background.jpg', 0, 0, WIN_WIDTH, WIN_HEIGHT)
+
+run = True
+clock = pygame.time.Clock()
+
+while run: 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+    clock.tick(FPS)
+    pygame.display.update()
+
+pygame.quit()
