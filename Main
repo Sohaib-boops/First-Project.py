@@ -5,15 +5,17 @@ pygame.init()
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-WIN_WIDTH = 800
-WIN_HEIGHT = 800
+WIN_WIDTH = 1536
+WIN_HEIGHT = 1024
 FPS = 60
-SPEED = 5
+SPEED = 10
 BULLET_SPEED = 15
 PUSHBACK = 5          # extra gap applied when resolving a wall collision
 #ENEMY_LEFT_BOUND = 260  # x position where the enemy turns around
 #ENEMY_RIGHT_BOUND = 700
-
+WALL_CORDS = [
+    (300,700, 100, 50),
+]
 
 
 # ---------------------------------------------------------------------------
@@ -101,27 +103,98 @@ class Bullet(GameSprite):
 
 
 
-
-
-
-
-
-
 # ---------------------------------------------------------------------------
 # Window & world setup
 # ---------------------------------------------------------------------------
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 pygame.display.set_caption('Maze Game')
 
-bg = GameSprite('background.jpg', 0, 0, WIN_WIDTH, WIN_HEIGHT)
+#PLAYER///
+player = Player('player1.png', 100, 500, 100, 100)
 
-run = True
+#FIRST MENU
+bg = GameSprite('MainMenu.png', 0, 0, WIN_WIDTH, WIN_HEIGHT)
+play = GameSprite('play.png', 600, 400, 300, 100)
+quit = GameSprite('quit.png', 600, 550, 300, 100)
+
+#levels buttons
+levels = pygame.sprite.Group()
+level1 = GameSprite('level1.png',566, 330,390,100 )
+level2 = GameSprite('level2.png',566, 470,390,100 )
+level3 = GameSprite('level3.png',566, 610,390,100 )
+levels.add(level1)
+levels.add(level2)
+levels.add(level3)
+
+#levels backgrounds
+lvl1map = GameSprite('lvl1Map.jpg', 0, 0, WIN_WIDTH, WIN_HEIGHT)
+lvl2map = GameSprite('lvl2Map.png', 0, 0, WIN_WIDTH, WIN_HEIGHT)
+lvl3map = GameSprite('lvl3Map.png', 0, 0, WIN_WIDTH, WIN_HEIGHT)
+
+#Level 1 walls
+walls = pygame.sprite.Group()
+for x,y,width,height in WALL_CORDS:
+    wall = GameSprite('miniplatform.png', x, y, width, height)
+    walls.add(wall)
+
+ground = GameSprite('ground.png', 0, 800, WIN_WIDTH, 100)
+walls.add(ground)
+
 clock = pygame.time.Clock()
+run = True
+screen = 'menu'
+while run:
 
-while run: 
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             run = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            if screen == "menu":
+                if play.rect.collidepoint(event.pos):
+                    screen = "levels"
+                elif quit.rect.collidepoint(event.pos):
+                    run = False    
+
+            elif screen == "levels":
+                if level1.rect.collidepoint(event.pos):
+                    screen = "level1"
+
+                elif level2.rect.collidepoint(event.pos):
+                    screen = "level2"
+
+                elif level3.rect.collidepoint(event.pos):
+                    screen = "level3"
+
+                
+                            
+
+            
+    if screen == "menu":
+        bg.reset()
+        play.reset()
+        quit.reset()
+        
+
+    elif screen == "levels":
+        bg.reset()
+        levels.draw(window)
+        
+    elif screen == "level1":
+        lvl1map.reset()
+        walls.draw(window)
+        player.reset()
+        player.update()
+    elif screen == "level2":
+        lvl2map.reset()
+        player.reset()
+        player.update()
+    elif screen == "level3":
+        lvl3map.reset()
+        player.reset()
+        player.update()
     clock.tick(FPS)
     pygame.display.update()
 
