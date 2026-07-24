@@ -1,0 +1,23 @@
+import pygame
+pygame.init()
+
+# Set up the display
+FULLSCREEN_WIDTH = 1920
+FULLSCREEN_HEIGHT = 1000
+WINDOW_SIZE = (FULLSCREEN_WIDTH,FULLSCREEN_HEIGHT)
+FPS = 60
+window = pygame.display.set_mode9(WINDOW_SIZE)
+clock = pygame.time.Clock()
+
+#Menus
+bg = pygame.image.load("Menu.png") # Load the background image
+
+
+
+
+run = True
+while run:
+
+    window.blit(bg, (0, 0))  # Draw the background image
+    clock.tick(FPS)
+    pygame.display.flip()  # Update the display 
