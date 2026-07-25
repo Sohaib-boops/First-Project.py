@@ -9,13 +9,20 @@ WIN_WIDTH = 1536
 WIN_HEIGHT = 1024
 FPS = 60
 SPEED = 10
+JUMP_SPEED = 18
+GRAVITY = 0.8
+MAX_FALL_SPEED = 20
 BULLET_SPEED = 15
 PUSHBACK = 5          # extra gap applied when resolving a wall collision
+FRAME_WIDTH = 32
+FRAME_HEIGHT = 32
+idle_frames = []
+run_frames = []
+
+animation_speed = 0.15
 #ENEMY_LEFT_BOUND = 260  # x position where the enemy turns around
 #ENEMY_RIGHT_BOUND = 700
-WALL_CORDS = [
-    (300,700, 100, 50),
-]
+
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +33,7 @@ class GameSprite(pygame.sprite.Sprite):
 
     def __init__(self, image, x, y, width, height):
         super().__init__()
-        self.image = pygame.transform.scale(pygame.image.load(image), (width, height))
+        self.image = pygame.transform.scale(pygame.image.load(image).convert_alpha(), (width, height))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -42,11 +49,47 @@ class Player(GameSprite):
         super().__init__(image, x, y, width, height)
         self.x_speed = 0
         self.y_speed = 0
+        self.frame = 0.0
+        self.facing_right = True
 
-    def update(self):
-       
+    def update(self, events):
+        on_ground = False
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    self.x_speed = SPEED
+                elif event.key == pygame.K_LEFT:
+                    self.x_speed = -SPEED
+                elif event.key == pygame.K_UP:
+                    if self.y_speed == 0:
+                        self.y_speed = -JUMP_SPEED
+                elif event.key == pygame.K_SPACE:
+                    self.fire()
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_RIGHT and self.x_speed > 0:
+                    self.x_speed = 0
+                elif event.key == pygame.K_LEFT and self.x_speed < 0:
+                    self.x_speed = 0
+
+        self.y_speed = min(self.y_speed + GRAVITY, MAX_FALL_SPEED)
+
+        if self.x_speed > 0:
+            self.facing_right = True
+        elif self.x_speed < 0:
+            self.facing_right = False
+
+        moving = self.x_speed != 0
+        frames = run_frames if moving else idle_frames
+
+        self.frame += animation_speed
+        if self.frame >= len(frames):
+            self.frame = 0
+
+        image = frames[int(self.frame)]
+        if not self.facing_right:
+            image = pygame.transform.flip(image, True, False)
+
         self.rect.x += self.x_speed
-
         hits = pygame.sprite.spritecollide(self, walls, False)
         for wall in hits:
             if self.x_speed > 0:
@@ -54,22 +97,18 @@ class Player(GameSprite):
             elif self.x_speed < 0:
                 self.rect.left = wall.rect.right
 
-        # Vertical
         self.rect.y += self.y_speed
-
         hits = pygame.sprite.spritecollide(self, walls, False)
         for wall in hits:
             if self.y_speed > 0:
                 self.rect.bottom = wall.rect.top
+                self.y_speed = 0
+                on_ground = True
             elif self.y_speed < 0:
                 self.rect.top = wall.rect.bottom
-        
-        
+                self.y_speed = 0
 
-    def fire(self):
-        bullet = Bullet('bullet.png', self.rect.right, self.rect.centery, 25, 10)
-        bullets.add(bullet)
-
+        window.blit(image, self.rect)
 
 class Enemy(GameSprite):
     """Patrols back and forth between ENEMY_LEFT_BOUND and the right edge of the window."""
@@ -102,15 +141,57 @@ class Bullet(GameSprite):
 
 
 
-
 # ---------------------------------------------------------------------------
 # Window & world setup
 # ---------------------------------------------------------------------------
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-pygame.display.set_caption('Maze Game')
+pygame.display.set_caption('The young adventurer')
+
+idle_sheet = pygame.image.load(
+    'idle.png'
+).convert_alpha()
+for i in range(11):      # change 11 if your Idle has a different number
+    frame_image = idle_sheet.subsurface(
+        (
+            i * FRAME_WIDTH,
+            0,
+            FRAME_WIDTH,
+            FRAME_HEIGHT
+        )
+    )
+
+    idle_frames.append(frame_image)
+
+scale = 3
+
+for i in range(len(idle_frames)):
+    idle_frames[i] = pygame.transform.scale(
+        idle_frames[i],
+        (FRAME_WIDTH * scale, FRAME_HEIGHT * scale)
+    )
+
+run_sheet = pygame.image.load(
+    'run.png'
+).convert_alpha()
+for i in range(12):      
+    frame_image = run_sheet.subsurface(
+        (
+            i * FRAME_WIDTH,
+            0,
+            FRAME_WIDTH,
+            FRAME_HEIGHT
+        )
+    )
+
+    frame = pygame.transform.scale(
+        frame_image,
+        (FRAME_WIDTH*3, FRAME_HEIGHT*3)
+    )
+
+    run_frames.append(frame)
 
 #PLAYER///
-player = Player('player1.png', 100, 500, 100, 100)
+
 
 #FIRST MENU
 bg = GameSprite('MainMenu.png', 0, 0, WIN_WIDTH, WIN_HEIGHT)
@@ -122,9 +203,7 @@ levels = pygame.sprite.Group()
 level1 = GameSprite('level1.png',566, 330,390,100 )
 level2 = GameSprite('level2.png',566, 470,390,100 )
 level3 = GameSprite('level3.png',566, 610,390,100 )
-levels.add(level1)
-levels.add(level2)
-levels.add(level3)
+
 
 #levels backgrounds
 lvl1map = GameSprite('lvl1Map.jpg', 0, 0, WIN_WIDTH, WIN_HEIGHT)
@@ -132,69 +211,64 @@ lvl2map = GameSprite('lvl2Map.png', 0, 0, WIN_WIDTH, WIN_HEIGHT)
 lvl3map = GameSprite('lvl3Map.png', 0, 0, WIN_WIDTH, WIN_HEIGHT)
 
 #Level 1 walls
-walls = pygame.sprite.Group()
-for x,y,width,height in WALL_CORDS:
-    wall = GameSprite('miniplatform.png', x, y, width, height)
-    walls.add(wall)
+walls_level1 = pygame.sprite.Group()
+platform = GameSprite('platform.png', 500, 600, 200, 30 )
+wall  = GameSprite('miniplatform.png', 300, 700, 80, 30)
 
-ground = GameSprite('ground.png', 0, 800, WIN_WIDTH, 100)
-walls.add(ground)
+walls_level1.add(wall)
+walls_level1.add(platform)
+ground = GameSprite('ground.png', 0, 830, WIN_WIDTH, 100)
+
+bullets = pygame.sprite.Group()
+player = Player('player1.png', 100, 700, FRAME_WIDTH * 3, FRAME_HEIGHT * 3)
 
 clock = pygame.time.Clock()
 run = True
 screen = 'menu'
 while run:
+    events = pygame.event.get()
 
-    for event in pygame.event.get():
-
+    for event in events:
         if event.type == pygame.QUIT:
             run = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-
             if screen == "menu":
                 if play.rect.collidepoint(event.pos):
                     screen = "levels"
                 elif quit.rect.collidepoint(event.pos):
-                    run = False    
-
+                    run = False
             elif screen == "levels":
                 if level1.rect.collidepoint(event.pos):
                     screen = "level1"
-
                 elif level2.rect.collidepoint(event.pos):
                     screen = "level2"
-
                 elif level3.rect.collidepoint(event.pos):
                     screen = "level3"
 
-                
-                            
-
-            
     if screen == "menu":
         bg.reset()
         play.reset()
         quit.reset()
-        
-
     elif screen == "levels":
         bg.reset()
         levels.draw(window)
-        
-    elif screen == "level1":
+    if screen == "level1":
         lvl1map.reset()
-        walls.draw(window)
-        player.reset()
-        player.update()
+        walls_level1.draw(window)
+        player.update(events)
+        bullets.update()
+        bullets.draw(window)
     elif screen == "level2":
         lvl2map.reset()
-        player.reset()
-        player.update()
+        player.update(events)
+        bullets.update()
+        bullets.draw(window)
     elif screen == "level3":
         lvl3map.reset()
-        player.reset()
-        player.update()
+        player.update(events)
+        bullets.update()
+        bullets.draw(window)
     clock.tick(FPS)
     pygame.display.update()
 
