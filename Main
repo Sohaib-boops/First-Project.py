@@ -200,9 +200,11 @@ quit = GameSprite('quit.png', 600, 550, 300, 100)
 
 #levels buttons
 levels = pygame.sprite.Group()
-level1 = GameSprite('level1.png',566, 330,390,100 )
-level2 = GameSprite('level2.png',566, 470,390,100 )
-level3 = GameSprite('level3.png',566, 610,390,100 )
+level1 = levels.add(GameSprite('level1.png',566, 330,390,100 ))
+level2 = levels.add(GameSprite('level2.png',566, 470,390,100 ))
+level3 = levels.add(GameSprite('level3.png',566, 610,390,100 ))
+
+
 
 
 #levels backgrounds
