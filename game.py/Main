@@ -127,7 +127,7 @@ class Player(GameSprite):
 #world building///
 
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-pygame.display.set_caption('The young adventurer')
+pygame.display.set_caption('The young travelerD')
 
 idle_sheet = pygame.image.load(
     'idle.png'
@@ -255,21 +255,47 @@ walls_level3.add(ground3)
 
 current_walls = walls_level1
 
+
+def build_coin_group(positions):
+    group = pygame.sprite.Group()
+    for x, y in positions:
+        group.add(GameSprite('coin.png', x, y, 80, 80))
+    return group
+
+
+def enter_level(level_name):
+    global screen, current_walls, current_targets, targets_level1, targets_level2, targets_level3, score
+
+    if level_name == 'level1':
+        screen = 'level1'
+        current_walls = walls_level1
+        targets_level1 = build_coin_group([(1030, 140), (1400, 430)])
+        current_targets = targets_level1
+    elif level_name == 'level2':
+        screen = 'level2'
+        current_walls = walls_level2
+        targets_level2 = build_coin_group([(630, 300), (180, 100), (1300, 100)])
+        current_targets = targets_level2
+    elif level_name == 'level3':
+        screen = 'level3'
+        current_walls = walls_level3
+        targets_level3 = build_coin_group([(800, 400), (1400, 700)])
+        current_targets = targets_level3
+
+    player.rect.x, player.rect.y = 100, 700
+    player.x_speed = 0
+    player.y_speed = 0
+    score = 0
+
+
 #Level 1 targets
-targets_level1 = pygame.sprite.Group()
-coin = targets_level1.add(GameSprite('coin.png', 1030, 140, 80,80))
-coin2 = targets_level1.add(GameSprite('coin.png', 1400,430, 80, 80))
+targets_level1 = build_coin_group([(1030, 140), (1400, 430)])
 
 #Level 2 targets
-targets_level2 = pygame.sprite.Group()
-coin = targets_level2.add(GameSprite('coin.png', 630, 300, 80,80))
-coin2 = targets_level2.add(GameSprite('coin.png', 180, 100, 80, 80))
-coin2 = targets_level2.add(GameSprite('coin.png', 1300, 100, 80, 80))
+targets_level2 = build_coin_group([(630, 300), (180, 100), (1300, 100)])
 
 #Level 3 targets
-targets_level3 = pygame.sprite.Group()
-coin = targets_level3.add(GameSprite('coin.png', 800, 400, 80,80))
-coin2 = targets_level3.add(GameSprite('coin.png', 1400,700, 80, 80))
+targets_level3 = build_coin_group([(800, 400), (1400, 700)])
 
 current_targets = targets_level1
 
@@ -293,29 +319,11 @@ while run:
                 elif quit.rect.collidepoint(event.pos):
                     run = False
             elif level1.rect.collidepoint(event.pos):
-                screen = "level1"
-                current_walls = walls_level1
-                current_targets = targets_level1
-                player.rect.x, player.rect.y = 100, 700
-                player.x_speed = 0
-                player.y_speed = 0
-                score = 0
+                enter_level('level1')
             elif level2.rect.collidepoint(event.pos):
-                screen = "level2"
-                current_walls = walls_level2
-                current_targets = targets_level2
-                player.rect.x, player.rect.y = 100, 700
-                player.x_speed = 0
-                player.y_speed = 0
-                score = 0
+                enter_level('level2')
             elif level3.rect.collidepoint(event.pos):
-                screen = "level3"
-                current_walls = walls_level3
-                current_targets = targets_level3
-                player.rect.x, player.rect.y = 100, 700
-                player.x_speed = 0
-                player.y_speed = 0
-                score = 0
+                enter_level('level3')
             if backButton.rect.collidepoint(event.pos):
                 screen = "menu"
              
