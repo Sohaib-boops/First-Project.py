@@ -113,41 +113,18 @@ class Player(GameSprite):
                 self.y_speed = 0
 
         self.on_ground = on_ground
+        
+        
+            
         self.rect.clamp_ip(pygame.Rect(0, 0, WIN_WIDTH, WIN_HEIGHT))
         window.blit(image, self.rect)
 
-class Enemy(GameSprite):
-    """Patrols back and forth between ENEMY_LEFT_BOUND and the right edge of the window."""
-
-    def __init__(self, image, x, y, width, height, speed,left,right):
-        super().__init__(image, x, y, width, height)
-        self.speed = speed
-        self.left = left
-        self.right = right
-
-
-    def update(self):
-        self.rect.x += self.speed
-        if self.rect.right > self.right:
-            self.speed *= -1
-        elif self.rect.x < self.left:
-            self.speed *= -1
-
-
-class Bullet(GameSprite):
-    def __init__(self, image, x, y, width, height):
-        super().__init__(image, x, y, width, height)
-        self.speed = BULLET_SPEED
-
-    def update(self):
-        self.rect.x += self.speed
-        
-        if self.rect.x > WIN_WIDTH + 10:  # off-screen -> remove
-            self.kill()
 
 
 
-#world building
+
+
+#world building///
 
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 pygame.display.set_caption('The young adventurer')
@@ -225,9 +202,9 @@ lvl3map = GameSprite('lvl3Map.png', 0, 0, WIN_WIDTH, WIN_HEIGHT)
 
 #IN-LEVELS GUI///
 score = 0
-COMPLETED_LEVEL1 = GameSprite("COMPLETED.png", 0, 0, WIN_WIDTH, WIN_HEIGHT)
+completed_level = GameSprite("COMPLETED.png", 0, 0, WIN_WIDTH, WIN_HEIGHT)
 menuButton = GameSprite('MENUBUTTON.png', 520, 690, 500,200 )
-backButton = GameSprite('backButton.png',0,0,90,90)
+backButton = GameSprite('backButton.png',0,0,100,90)
 
 
 #Level 1 walls
@@ -236,13 +213,17 @@ platforms = pygame.sprite.Group()
 boxes = pygame.sprite.Group()
 platform = platforms.add(GameSprite('platform2.png', 500, 550, 200, 30 ))
 platform2 = platforms.add(GameSprite('platform2.png', 520, 350, 150, 30 ))
-platform3 = platforms.add(GameSprite('platform.png', 800, 250, 500, 50 ))
+platform3 = platforms.add(GameSprite('platform.png', 900, 250, 500, 50 ))
 FloatingPlatform1 = platforms.add(GameSprite('floatingPlatform.png',  250, 450, 90, 30))
 FloatingPlatform2 = platforms.add(GameSprite('floatingPlatform.png',  850, 450, 90, 30))
 wall = platforms.add(GameSprite('miniplatform.png', 300, 700, 80, 30))
-box = boxes.add(GameSprite('box .png', 700, 730, 100,100))
-box2 = boxes.add(GameSprite('box .png', 1000, 730, 100,100))
-
+box = boxes.add(GameSprite('box .png', 800, 730, 100,100))
+box2 = boxes.add(GameSprite('box .png', 1100, 730, 100,100))
+box3 = boxes.add(GameSprite('box .png', 1100, 630, 100, 100))
+box4 = boxes.add(GameSprite("box .png", 1400, 730, 100, 100))
+box5 = boxes.add(GameSprite("box .png", 1400, 630, 100, 100))
+box6 = boxes.add(GameSprite("box .png", 1400, 530, 100, 100))
+box7 = boxes.add(GameSprite('box .png', 1200, 730, 100,100))
 ground = GameSprite('ground.png', 0, 830, WIN_WIDTH, 180)
 
 walls_level1.add(
@@ -253,9 +234,16 @@ walls_level1.add(
 
 #level 2 obstacles and platforms
 walls_level2 = pygame.sprite.Group()
-platform = walls_level2.add(GameSprite('platform2.png', 550, 400, 200, 30 ))
-platform2 = walls_level2.add(GameSprite('platform2.png', 300, 600, 200, 30 ))
-ground2 = GameSprite('ground.png', 0, 830, WIN_WIDTH, 180)
+platform = walls_level2.add(GameSprite('nightPlatform.png', 550, 400, 230, 65))
+platform2 = walls_level2.add(GameSprite('2nd.png', 400, 700, 154, 30 ))
+platform3 = walls_level2.add(GameSprite('2nd.png', 700, 700, 154, 30 ))
+platform2 = walls_level2.add(GameSprite('2nd.png', 1000, 700, 154, 30 ))
+platform2 = walls_level2.add(GameSprite('2nd.png', 1300, 530, 154, 30 ))
+platform2 = walls_level2.add(GameSprite('2nd.png', 1000, 430, 154, 30 ))
+platform2 = walls_level2.add(GameSprite('nightPlatform.png', 120, 250, 230, 65 ))
+decorations = pygame.sprite.Group()
+boulders = decorations.add(GameSprite('decoration.png', 100, 580, 400, 300))
+ground2 = GameSprite('nightyground.png', 0, 880, WIN_WIDTH, 180)
 walls_level2.add(ground2)
 
 #level 3 obstacles and platforms
@@ -270,12 +258,13 @@ current_walls = walls_level1
 #Level 1 targets
 targets_level1 = pygame.sprite.Group()
 coin = targets_level1.add(GameSprite('coin.png', 1030, 140, 80,80))
-coin2 = targets_level1.add(GameSprite('coin.png', 1400,700, 80, 80))
+coin2 = targets_level1.add(GameSprite('coin.png', 1400,430, 80, 80))
 
 #Level 2 targets
 targets_level2 = pygame.sprite.Group()
-coin = targets_level2.add(GameSprite('coin.png', 700, 300, 80,80))
-coin2 = targets_level2.add(GameSprite('coin.png', 1400,700, 80, 80))
+coin = targets_level2.add(GameSprite('coin.png', 630, 300, 80,80))
+coin2 = targets_level2.add(GameSprite('coin.png', 180, 100, 80, 80))
+coin2 = targets_level2.add(GameSprite('coin.png', 1300, 100, 80, 80))
 
 #Level 3 targets
 targets_level3 = pygame.sprite.Group()
@@ -284,11 +273,6 @@ coin2 = targets_level3.add(GameSprite('coin.png', 1400,700, 80, 80))
 
 current_targets = targets_level1
 
-tree = GameSprite("tree.png",20, 530, 150, 300)
-
-
-bullets = pygame.sprite.Group()
-kunai = bullets.add(Bullet('kunai.png',0,0, 30,30))
 player = Player('player1.png', 100, 700, FRAME_WIDTH * 3, FRAME_HEIGHT * 3)
 
 clock = pygame.time.Clock()
@@ -334,9 +318,14 @@ while run:
                 score = 0
             if backButton.rect.collidepoint(event.pos):
                 screen = "menu"
+             
             if screen == 'level_complete':
                 if menuButton.rect.collidepoint(event.pos):
                     screen ="menu"
+
+    if screen == "level_complete":
+        completed_level.reset()
+        menuButton.reset()                
     if screen == "menu":
         bg.reset()
         play.reset()
@@ -349,37 +338,47 @@ while run:
     elif screen == "level1":
         lvl1map.reset()
         backButton.reset()
-        tree.reset()
+        
         player.update(events, current_walls)
         reached = pygame.sprite.spritecollide(player, current_targets, True)
         if reached:
             coinSound.play()
             score += 1
-            
+            if score == 2:
+                screen = 'level_complete'
+        
         current_walls.draw(window)
         current_targets.draw(window)
 
     elif screen == "level2":
         lvl2map.reset()
+        decorations.draw(window)
         backButton.reset()
         player.update(events, current_walls)
         reached = pygame.sprite.spritecollide(player, current_targets, True)
         if reached:
             coinSound.play()
             score += 1
+            if score == 3:
+                screen = 'level_complete'
         current_walls.draw(window)
         current_targets.draw(window)
+        
 
-    elif screen == "level3":
-        lvl3map.reset()
-        backButton.reset()
-        player.update(events, current_walls)
-        reached = pygame.sprite.spritecollide(player, current_targets, True)
-        if reached:
-            coinSound.play()
-            score += 1
-        current_walls.draw(window)
-        current_targets.draw(window)
+    # elif screen == "level3":
+    #     lvl3map.reset()
+    #     backButton.reset()
+    #     player.update(events, current_walls)
+    #     reached = pygame.sprite.spritecollide(player, current_targets, True)
+    #     if reached:
+    #         coinSound.play()
+    #         score += 1
+    #         if score == 2:
+    #             screen = 'level_complete'
+    #     current_walls.draw(window)
+    #     current_targets.draw(window)
+
+    
     clock.tick(FPS)
     pygame.display.update()
 
